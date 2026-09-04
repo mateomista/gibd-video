@@ -1,0 +1,60 @@
+# =============================================================================
+# config.yaml
+#
+# Unico lugar donde se elige QUE dataset y QUE modelo se van a usar. Cambiar
+# de dataset o de modelo (para repetir el experimento con otro) es cambiar
+# los valores de "name" de abajo (y sus "params"); train.py no cambia.
+# =============================================================================
+
+seed: 42
+output_dir: "./outputs/rtdetr-ccpd"
+
+# --------------------------------------------------------------------------
+# DATASET
+# --------------------------------------------------------------------------
+dataset:
+  name: "ccpd"
+  common_params:
+    class_mode: "single"
+    image_extensions: [".jpg", ".jpeg", ".png"]
+  train_params:
+    root_dir: "C:/GIBD/Proyecto Policia/Datasets/CCPD2020/ccpd_green/train"
+  val_params:
+    root_dir: "C:/GIBD/Proyecto Policia/Datasets/CCPD2020/ccpd_green/val"
+  val_ratio: 0.1
+
+# --------------------------------------------------------------------------
+# MODELO
+# --------------------------------------------------------------------------
+model:
+  name: "rtdetr"   # clave registrada en models/rtdetr_model.py -> @register_model("rtdetr")
+  params:
+    # Checkpoints Apache-2.0 (org "PekingU" en HuggingFace Hub):
+    #   PekingU/rtdetr_r18vd   (mas liviano/rapido)
+    #   PekingU/rtdetr_r34vd
+    #   PekingU/rtdetr_r50vd   (default, buen balance)
+    #   PekingU/rtdetr_r101vd  (mas preciso, mas pesado)
+    #   PekingU/rtdetr_v2_r18vd / r34vd / r50vd / r101vd  (RT-DETRv2)
+    checkpoint: "PekingU/rtdetr_r50vd"
+    image_size: 640
+
+# --------------------------------------------------------------------------
+# ENTRENAMIENTO (pasado directo a transformers.TrainingArguments)
+# --------------------------------------------------------------------------
+training:
+  num_train_epochs: 20
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  gradient_accumulation_steps: 1
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  logging_steps: 50
+  eval_strategy: "epoch"
+  save_strategy: "epoch"
+  save_total_limit: 3
+  fp16: true            # poner en false si no hay GPU con soporte fp16
+  bf16: false
+  dataloader_num_workers: 4
+  report_to: "none"      # "tensorboard" para loguear metricas, por ejemplo

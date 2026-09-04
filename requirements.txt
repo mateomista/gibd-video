@@ -1,0 +1,9 @@
+# Todas las dependencias tienen licencias permisivas (Apache-2.0, BSD o MIT),
+# compatibles con uso comercial.
+torch>=2.1            # BSD-3-Clause
+torchvision>=0.16      # BSD-3-Clause
+transformers>=4.44     # Apache-2.0  (incluye RTDetrForObjectDetection / RTDetrImageProcessor)
+accelerate>=0.30       # Apache-2.0  (usado internamente por Trainer)
+pyyaml>=6.0            # MIT
+pillow>=10.0           # HPND (permisiva, similar a MIT)
+numpy>=1.24            # BSD-3-Clause
