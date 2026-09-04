@@ -7,3 +7,4 @@ accelerate>=0.30       # Apache-2.0  (usado internamente por Trainer)
 pyyaml>=6.0            # MIT
 pillow>=10.0           # HPND (permisiva, similar a MIT)
 numpy>=1.24            # BSD-3-Clause
+scipy>=1.10            # BSD-3-Clause  (usado por RTDetrHungarianMatcher para el matching bipartito de la loss)
