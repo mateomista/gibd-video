@@ -23,6 +23,7 @@ Uso:
     python train.py --config config.yaml
 """
 import argparse
+import inspect
 import os
 from pathlib import Path
 
@@ -129,7 +130,7 @@ def main():
     # --- Entrenamiento (via transformers.Trainer, funciona igual sin
     #     importar que dataset/modelo se hayan elegido arriba) ---
     tr_cfg = cfg.get("training", {})
-    training_args = TrainingArguments(
+    desired_args = dict(
         output_dir=cfg.get("output_dir", "./outputs"),
         num_train_epochs=tr_cfg.get("num_train_epochs", 20),
         per_device_train_batch_size=tr_cfg.get("per_device_train_batch_size", 8),
@@ -154,6 +155,23 @@ def main():
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
     )
+    # Distintas versiones de transformers agregan/quitan parametros de
+    # TrainingArguments (p.ej. warmup_ratio, eval_strategy). En vez de fijar
+    # una version exacta en requirements.txt, se descartan en runtime los
+    # que la version instalada no soporte, para no romper el entrenamiento
+    # por un parametro no critico.
+    supported = set(inspect.signature(TrainingArguments.__init__).parameters)
+    # "eval_strategy" es el nombre nuevo de "evaluation_strategy" (version
+    # vieja de transformers). Si la instalada solo conoce el nombre viejo,
+    # hay que renombrar la clave en vez de descartarla: si no,
+    # load_best_model_at_end=True revienta porque no hay eval_strategy que
+    # coincida con save_strategy.
+    if "eval_strategy" not in supported and "evaluation_strategy" in supported:
+        desired_args["evaluation_strategy"] = desired_args.pop("eval_strategy")
+    unsupported = {k: v for k, v in desired_args.items() if k not in supported}
+    if unsupported:
+        print(f"[training_args] Ignorando parametros no soportados por esta version de transformers: {list(unsupported)}")
+    training_args = TrainingArguments(**{k: v for k, v in desired_args.items() if k in supported})
 
     trainer = Trainer(
         model=adapter.hf_model,
